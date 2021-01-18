@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang=en dir=auto>
+<head>
+    <meta charset=utf-8>
+    <meta http-equiv=x-ua-compatible content="IE=edge">
+    <meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+    <meta name=robots content="index, follow">
+    <title>PaperMod - {% block title %}{% endblock %}</title>
+    <meta name=keywords content>
+    <link href=../../static/stylesheet.min.css rel="preload stylesheet" as=style>
+    <meta name=theme-color content="#2e2e33">
+    <meta name=msapplication-TileColor content="#2e2e33">
+
+</head>
+<body class=list id=top>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+</script>
+<noscript>
+    <style
+        type=text/css>.theme-toggle, .top-link {
+            display: none
+        }
+    </style>
+</noscript>
+{% include 'includes/header.html' %}
+<main class=main>
+    {% block content %}{% endblock content %}
+</main>
+{% include 'includes/footer.html' %}
+{% include 'includes/scripts.html' %}
+
+</body>
+</html>
