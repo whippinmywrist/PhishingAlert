@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.10-rc-alpine
 
 COPY app.py requirements.txt ./
 COPY static static
@@ -6,8 +6,8 @@ COPY templates templates
 
 RUN pip install -r requirements.txt
 
-EXPOSE 5000
-
 ENV FLASK_APP app.py
 
-CMD python -m flask run
+EXPOSE 5000
+
+ENTRYPOINT flask run -h 0.0.0.0
