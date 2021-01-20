@@ -259,6 +259,23 @@ body:not(.dark) #sun {
 .pagination .next {
     margin-inline-start:auto}
 
+.ml-buttons {
+    text-align: center;
+}
+
+.ml-buttons a {
+    color: var(--theme);
+    font-size: 13px;
+    line-height: 36px;
+    background: var(--primary);
+    border-radius: calc(36px/2);
+    padding: 0 16px
+}
+
+.ml-buttons .ml-button {
+    display: inline-block;
+}
+
 .social-icons {
     padding: 12px 0
 }
@@ -288,7 +305,7 @@ code {
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3
+    -webkit-line-clamp: 3;
 }
 
 .first-entry .entry-header h2 {
@@ -318,6 +335,10 @@ code {
     border-radius: var(--radius);
     transition: transform .1s;
     border: 1px solid var(--border)
+}
+
+.post-entry img {
+    margin: 14px 0;
 }
 
 .post-entry:active {
@@ -442,10 +463,6 @@ code {
 
 .post-content h6 {
     font-size: 12px
-}
-
-.post-content a,.toc a:hover {
-    box-shadow: 0 1px 0
 }
 
 .post-content a code {
@@ -608,35 +625,38 @@ code {
     margin: 24px 0 16px
 }
 
-.toc {
-    margin-bottom: 40px;
+.ml-results {
+    margin-bottom: 20px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: .5em
 }
 
-.toc details summary {
+.ml-results details summary {
     cursor: zoom-in;
-    margin-inline-start:20px}
+    margin-inline-start:20px;
+    font-size: 14px;
+}
 
-.toc details[open] summary {
+.ml-results details[open] summary {
     cursor: zoom-out
 }
 
-.toc .details {
+.ml-results .details {
     display: inline;
     font-weight: 500
 }
 
-.toc blockquote {
+.ml-results blockquote {
     margin: 0 20px;
-    padding: 10px 20px
+    padding: 10px 20px;
+    font-size: 12px;
 }
 
-.toc li ul {
+.ml-results li ul {
     margin-inline-start:var(--gap)}
 
-.toc summary:focus {
+.ml-results summary:focus {
     outline: 0
 }
 
@@ -928,6 +948,22 @@ img {
 .dark.list {
     background: var(--theme)
 }
+
+.domain-card {
+    position: relative;
+    margin-bottom: var(--gap);
+    padding: var(--gap);
+    background: var(--entry);
+    border-radius: var(--radius);
+    transition: transform .1s;
+    border: 1px solid var(--border);
+}
+
+
+.domain-card img {
+    margin: 14px 0;
+}
+
 
 @media screen and (max-width: 768px) {
     :root {

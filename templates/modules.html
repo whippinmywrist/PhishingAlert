@@ -1,0 +1,21 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Modules {% endblock %}
+
+{% block content %}
+    <header class="page-header">
+        <h1>Modules</h1>
+        <div class=post-meta>
+            <ul>Test modules output here:</ul>
+        </div>
+    </header>
+
+    <div id="searchbox">
+        <input autofocus placeholder="Enter domain name to test" aria-label="module-test">
+        <ul id="searchResults" aria-label="modules results">
+            <p><strong>Number of digits in the domain name: </strong>2</p>
+            <p><strong>Total URL length: </strong>21</p>
+        </ul>
+    </div>
+
+{% endblock content %}

@@ -1,0 +1,21 @@
+{% macro dc(header, screenshot, datetime, id_phising, href_phising, id_fp, href_fp) -%}
+<div class=domain-card>
+    <header class=entry-header><h2>{{ header }}</h2></header>
+    <p><img src="{{ screenshot }}"></p>
+    <div class="ml-results">
+        <details>
+            <summary accesskey="c" title="(Alt + C)">
+                <div class="details">Show ML results</div>
+            </summary>
+            <blockquote>
+                <a>Total URL length:</a>
+            </blockquote>
+        </details>
+    </div>
+    <div class="ml-buttons">
+        <a class=ml-button id={{ id_phising }} href={{ href_phising }}>It is a phishing domain!</a>
+        <a class=ml-button id={{ id_fp }} href={{href_fp}}>False-positive</a>
+    </div>
+    <footer class=entry-footer>{{ datetime }}</footer>
+</div>
+{%- endmacro %}

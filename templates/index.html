@@ -4,23 +4,18 @@
 
 {% block content %}
     <article class="first-entry home-info">
-        <header class=entry-header><h2>Index</h2></header>
+        <header class=entry-header><h2>Phishing domain found:</h2></header>
         <section class=entry-content><p>
-            <p>Welcome!</p>
-            <ul>
-                <li><strong>Test</strong> test
-                </li>
-                <li>Do give a 🌟 on Github !</li>
-            </ul>
+            <p>Today analyzed 109 domains!</p>
         </section>
+    </article>
 
-    </article>
-    <article class=post-entry>
-        <header class=entry-header><h2>Test</h2></header>
-        <section class=entry-content><p>Test...</p></section>
-        <footer class=entry-footer>January 18, 2021&nbsp;·&nbsp;3 min&nbsp;·&nbsp;Anton Skvortsov</footer>
-        <a class=entry-link aria-label="Test" href=#></a>
-    </article>
+    {% import "layouts/domain-card.html" as  domain_card %}
+    {{ domain_card.dc('google-ru.ru', '../static/img/screenshot.png', 'January 18, 2021 · 3 min',
+            'id_phishing1', '#', 'id_fp1', '#') }}
+    {{ domain_card.dc('google.ru', '../static/img/screenshot.PNG', 'January 18, 2021 · 3 min',
+            'id_phishing2', '#', 'id_fp2', '#') }}
+
     <footer class=page-footer>
         <nav class=pagination>
             <a class=next href=#>Next Page »</a>
