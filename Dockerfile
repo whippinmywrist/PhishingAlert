@@ -1,8 +1,8 @@
 FROM python:3.10-rc-alpine
 
-COPY app.py requirements.txt ./
-COPY static static
-COPY templates templates
+COPY app/home/routes.py requirements.txt ./
+COPY app/home/static static
+COPY app/home/templates templates
 
 RUN pip install -r requirements.txt
 
