@@ -1,3 +1,7 @@
 Flask~=1.1.2
 flask-login
+apscheduler
+pymongo
 python-decouple
+pytest
+pytest-cov

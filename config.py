@@ -13,7 +13,11 @@ class DebugConfig(Config):
     DEBUG = True
 
 
+class TestConfig(Config):
+    TESTING = True
+
 config_dict = {
     'Production': ProductionConfig,
-    'Debug': DebugConfig
+    'Debug': DebugConfig,
+    'Testing': TestConfig
 }

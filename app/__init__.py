@@ -2,6 +2,7 @@ from flask import Flask
 from importlib import import_module
 from flask_login import LoginManager
 
+
 login_manager = LoginManager()
 
 

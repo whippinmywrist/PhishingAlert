@@ -47,3 +47,7 @@ sudo docker-compose pull && sudo docker-compose build && sudo docker-compose up 
 
 Visit `http://localhost:5000` in your browser. The app should be up & running.
 
+## Testing
+```bash
+py.test --cov-report term-missing --cov app tests
+```
