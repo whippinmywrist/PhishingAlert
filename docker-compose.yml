@@ -1,6 +1,6 @@
 version: '3'
 services:
-  appseed-app:
+  phishingalert:
     restart: always
     env_file: .env
     build: .
@@ -9,6 +9,14 @@ services:
     networks:
       - db_network
       - web_network
+  mongo:
+    restart: always
+    env_file: .env
+    image: "mongo:latest"
+    ports:
+      - "27017:27017"
+    networks:
+      - db_network
   nginx:
     restart: always
     image: "nginx:latest"
@@ -19,7 +27,7 @@ services:
     networks:
       - web_network
     depends_on:
-      - appseed-app
+      - phishingalert
 networks:
   db_network:
     driver: bridge

@@ -2,6 +2,7 @@ Flask~=1.1.2
 flask-login
 apscheduler
 pymongo
+flask-mongoengine
 python-decouple
 pytest
 pytest-cov

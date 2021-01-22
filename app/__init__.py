@@ -1,7 +1,7 @@
 from flask import Flask
 from importlib import import_module
 from flask_login import LoginManager
-
+from flask_mongoengine import MongoEngine
 
 login_manager = LoginManager()
 
@@ -15,5 +15,7 @@ def register_blueprints(app):
 def create_app(config):
     app = Flask(__name__, static_folder='home/static')
     app.config.from_object(config)
-    register_blueprints(app)
+    db = MongoEngine()
+    db.init_app(app)
+
     return app

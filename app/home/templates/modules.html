@@ -11,10 +11,24 @@
     </header>
 
     <div id="searchbox">
-        <input autofocus placeholder="Enter domain name to test" aria-label="module-test">
+        <form action="/modules/test" method="GET">
+            <input name="url" autofocus placeholder="Enter domain name to test" aria-label="module-test"
+                   {% if url %}value="{{ url }}"{% endif %}>
+        </form>
         <ul id="searchResults" aria-label="modules results">
-            <p><strong>Number of digits in the domain name: </strong>2</p>
-            <p><strong>Total URL length: </strong>21</p>
+            {% for module, value in result.items() %}
+                {% if test %}
+                    <li class="post-entry">
+                        <p><strong>{{ module }} :</strong> {{ value }}</p>
+                        <a href="/module/{{ module }}"></a>
+                    </li>
+                {% else %}
+                    <li class="post-entry">
+                        <p><strong>{{ module }}</strong></p>
+                        <a href="/module/{{ module }}"></a>
+                    </li>
+                {% endif %}
+            {% endfor %}
         </ul>
     </div>
 

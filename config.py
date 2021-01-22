@@ -2,11 +2,20 @@ import os
 
 
 class Config(object):
+    DEBUG = False
+    TESTING = False
     basedir = os.path.abspath(os.path.dirname(__file__))
+    MONGODB_SETTINGS = {
+        'DB': 'PhishingAlert',
+        'host': 'localhost',
+        'port': 27017,
+    }
+    ALLOWED_FIRST_LEVEL_DOMAINS = ['ru', 'рф']
+    SECRET_KEY = os.urandom(32)
 
 
 class ProductionConfig(Config):
-    DEBUG = False
+    pass
 
 
 class DebugConfig(Config):
@@ -15,6 +24,7 @@ class DebugConfig(Config):
 
 class TestConfig(Config):
     TESTING = True
+
 
 config_dict = {
     'Production': ProductionConfig,
