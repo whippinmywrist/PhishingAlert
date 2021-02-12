@@ -439,6 +439,11 @@ code {
     margin: 24px 0 16px
 }
 
+.post-content textarea, .post-content input {
+    background: white;
+    font-size: small;
+}
+
 .post-content h1 {
     margin: 40px auto 32px;
     font-size: 40px

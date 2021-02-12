@@ -1,13 +1,14 @@
 FROM python:3.10-rc-alpine
 
-COPY app/home/routes.py requirements.txt ./
-COPY app/home/static static
-COPY app/home/templates templates
+RUN apk add zeromq-dev linux-headers g++
+COPY requirements.txt ./
 
 RUN pip install -r requirements.txt
 
-ENV FLASK_APP run.py
+COPY requirements.txt run.py config.py ./
+COPY app app
 
+ENV FLASK_APP=run.py
 EXPOSE 5000
 
-ENTRYPOINT flask run -h 0.0.0.0
+ENTRYPOINT python -u run.py

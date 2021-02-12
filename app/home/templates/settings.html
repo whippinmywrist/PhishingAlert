@@ -6,16 +6,40 @@
     <header class="page-header">
         <h1>Settings</h1>
     </header>
-
+    <ul id="searchResults" aria-label="modules results">
+    <h3>Modules</h3>
+            {% if error %}
+                <li class="post-entry">
+                    <p style="color: darksalmon;"><strong>{{ error }} :</strong></p>
+                </li>
+            {% endif %}
+            {% for module, value in result.items() %}
+                    <li class="post-entry">
+                        <p><strong>{{ module }}</strong></p>
+                        <a href="/module/{{ module }}"></a>
+                    </li>
+            {% endfor %}
+        </ul>
     <div class="post-content">
-        <h3>Section</h3>
-        <label><input type="checkbox" checked/> Some feature 1</label>
-        <br>
-        <label><input type="checkbox"/> Some feature 2</label>
-        <h3>Section</h3>
-        <label><input type="checkbox" checked/> Some feature 1</label>
-        <br>
-        <label><input type="checkbox"/> Some feature 2</label>
+        <h3>Domain list source</h3>
+        <form action="/settings">
+            <label><input type="radio" name="source" value="text"/> Text </label>
+            <br>
+            <textarea name="text" cols="40" rows="5" id="text"></textarea>
+            <br>
+            <label><input type="radio" name="source" value="elasticsearch"/> Elasticsearch </label>
+            <br>
+            <label><input type="url">URL</label>
+            <label><input type="text">Login</label>
+            <label><input type="password">Password</label>
+            <h3>Section</h3>
+            <label><input type="checkbox" checked/> Some feature 1</label>
+            <br>
+            <label><input type="checkbox"/> Some feature 2</label>
+            <br>
+            <a class="button">Save</a>
+        </form>
+
     </div>
 
 {% endblock content %}

@@ -11,11 +11,10 @@
     </article>
 
     {% import "layouts/domain-card.html" as  domain_card %}
-    {{ domain_card.dc('google-ru.ru', '../static/img/screenshot.png', 'January 18, 2021 · 3 min',
-            'id_phishing1', '#', 'id_fp1', '#') }}
-    {{ domain_card.dc('google.ru', '../static/img/screenshot.PNG', 'January 18, 2021 · 3 min',
-            'id_phishing2', '#', 'id_fp2', '#') }}
-
+    {% for domain in domains %}
+    {{ domain_card.dc(domain['url'], '../static/img/screenshot.png', domain['datetime'].strftime("%B %d, %Y"),
+            'id_phishing1', '#', 'id_fp1', '#', domain['data']) }}
+    {% endfor %}
     <footer class=page-footer>
         <nav class=pagination>
             <a class=next href=#>Next Page »</a>

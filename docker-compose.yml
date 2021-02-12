@@ -1,14 +1,29 @@
 version: '3'
 services:
-  phishingalert:
+  tornado:
     restart: always
-    env_file: .env
     build: .
     ports:
       - "5000:5000"
     networks:
       - db_network
       - web_network
+      - mq_network
+  ml:
+    restart: always
+    build: ml
+    ports:
+    - "43000:43000"
+    networks:
+      - mq_network
+  domain_processor:
+    restart: always
+    build: domain_processor
+    ports:
+    - "43001:43001"
+    networks:
+      - mq_network
+      - db_network
   mongo:
     restart: always
     env_file: .env
@@ -27,9 +42,11 @@ services:
     networks:
       - web_network
     depends_on:
-      - phishingalert
+      - tornado
 networks:
   db_network:
     driver: bridge
   web_network:
+    driver: bridge
+  mq_network:
     driver: bridge

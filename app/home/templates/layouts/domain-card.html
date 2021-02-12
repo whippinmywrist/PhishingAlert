@@ -1,4 +1,4 @@
-{% macro dc(header, screenshot, datetime, id_phising, href_phising, id_fp, href_fp) -%}
+{% macro dc(header, screenshot, datetime, id_phising, href_phising, id_fp, href_fp, data) -%}
 <div class=domain-card>
     <header class=entry-header><h2>{{ header }}</h2></header>
     <p><img src="{{ screenshot }}"></p>
@@ -8,7 +8,9 @@
                 <div class="details">Show ML results</div>
             </summary>
             <blockquote>
-                <a>Total URL length:</a>
+                {% for key, value in data.items() %}
+                <a>{{ key }}: {{ value }}</a><br>
+                {% endfor %}
             </blockquote>
         </details>
     </div>

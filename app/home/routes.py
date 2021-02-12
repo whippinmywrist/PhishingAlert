@@ -4,26 +4,30 @@ from flask_login import login_required, current_user
 from app import login_manager
 from jinja2 import TemplateNotFound
 import urllib.request
-from app.home.modules_engine import test_url, modules_list
-from wtforms import StringField, Form
-from wtforms.validators import DataRequired
+from app.home.modules_engine import modules_list
+from app import zmq
 
 
-@blueprint.route('/modules/test')
+@blueprint.route('/manual/add')
 def modules_test():
     url = request.args.get('url', type=str)
     try:
         urllib.request.urlopen(url)
-        result = test_url(url)
+        data = {
+            'action': 'test_url',
+            'url': url
+        }
+        zmq.send(data)
+
     except Exception as e:
         print(e)
-        return render_template('modules.html', result=dict((k, None) for k in modules_list), test=False, url=url)
-    return render_template('modules.html', result=result, test=True, url=url)
+        return render_template('manual.html', test=False, url=url, error=e)
+    return render_template('manual.html', url=url, add=True)
 
 
-@blueprint.route('/modules')
-def modules():
-    return render_template('modules.html', result=dict((k, None) for k in modules_list), test=False)
+@blueprint.route('/settings')
+def settings():
+    return render_template('settings.html', result=dict((k, None) for k in modules_list))
 
 
 @blueprint.route('/module/<name>')
