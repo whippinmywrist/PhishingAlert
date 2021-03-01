@@ -15,6 +15,9 @@
     {{ domain_card.dc(domain['url'], '../static/img/screenshot.png', domain['datetime'].strftime("%B %d, %Y"),
             'id_phishing1', '#', 'id_fp1', '#', domain['data']) }}
     {% endfor %}
+    {% if not domains %}
+        <p>No entries</p>
+    {% endif %}
     <footer class=page-footer>
         <nav class=pagination>
             <a class=next href=#>Next Page »</a>

@@ -6,7 +6,7 @@ if __name__ == '__main__':
     ctx = zmq.Context.instance()
     s = ctx.socket(zmq.PULL)
     s.bind('tcp://127.0.0.1:43001')
-
+    print('port 43001 binded...')
     loop = ioloop.IOLoop.current()
     loop.add_handler(s, echo, loop.READ)
     loop.add_callback(dot)

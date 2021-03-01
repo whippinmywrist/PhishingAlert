@@ -8,7 +8,16 @@
         <div class=post-meta>
             <ul>Module settings</ul>
         </div>
-
+        <div class="se">
+        {% if settings %}
+            {% for key, value in settings.items() %}
+                <p>{{ key }}:</p>
+                <input placeholder="Value" , value="{{ value }}">
+            {% endfor %}
+        {% else %}
+            <p>No settings for this module</p>
+        {% endif %}
+        </div>
     </header>
 
 

@@ -9,4 +9,6 @@ COPY core.py main.py modules.py ./
 
 EXPOSE 43001
 
+ENV PYTHONUNBUFFERED=1
+
 ENTRYPOINT python -u main.py

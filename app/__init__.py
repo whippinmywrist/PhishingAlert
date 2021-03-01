@@ -6,10 +6,11 @@ from app.base.zmq import ZMQ
 
 login_manager = LoginManager()
 zmq = ZMQ()
-mongo = MongoClient(host='mongo', port=27017)
+mongo = MongoClient(host='localhost', port=27017)
 db = mongo['phishing-alert']
 modules_collection = db['modules']
 analyzed_domains = db['analyzed-domains']
+
 
 
 def register_blueprints(app):

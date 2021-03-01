@@ -4,21 +4,60 @@ from flask_login import login_required, current_user
 from app import login_manager
 from jinja2 import TemplateNotFound
 import urllib.request
-from app.home.modules_engine import modules_list
-from app import zmq
+from app import zmq, db, analyzed_domains
+
+
+def send_to_domain_processor(urls, user_domain=False):
+    if isinstance(urls, list):
+        data = {
+            'action': 'add_bulk',
+            'urls': urls,
+            'user_domain': user_domain
+        }
+        zmq.send(data)
+        print('sended')
+    else:
+        raise ValueError
+
+
+@blueprint.route('/my_domains', methods=['GET', 'POST'])
+def my_domains():
+    if request.method == 'GET':
+        urls = [x['url'] for x in list(analyzed_domains.find({'user_domain': True})).copy()]
+        print(urls)
+        return render_template('my_domains.html', urls=urls)
+    if request.method == 'POST':
+        urls = request.form['domains'].replace('\r', '').split('\n')
+        try:
+            send_to_domain_processor(urls, user_domain=True)
+        except Exception as e:
+            print(e)
+            return render_template('my_domains.html', error=e, urls=urls)
+        return render_template('my_domains.html', add_msg=True, urls=urls)
+
+
+@blueprint.route('/manual/add_bulk', methods=['POST'])
+def manual_add_bulk():
+    urls = request.form['urls'].replace('\r', '').split('\n')
+    try:
+        send_to_domain_processor(urls)
+    except Exception as e:
+        print(e)
+        return render_template('manual.html', test=False, urls=urls, error=e)
+    return render_template('manual.html', urls=urls, add_msg=True)
 
 
 @blueprint.route('/manual/add')
-def modules_test():
+def manual_add():
     url = request.args.get('url', type=str)
     try:
         urllib.request.urlopen(url)
         data = {
-            'action': 'test_url',
+            'action': 'add',
             'url': url
         }
         zmq.send(data)
-
+        print('Sended')
     except Exception as e:
         print(e)
         return render_template('manual.html', test=False, url=url, error=e)
@@ -27,13 +66,16 @@ def modules_test():
 
 @blueprint.route('/settings')
 def settings():
+    modules_list = [x['module'] for x in db['modules_list'].find({})]
     return render_template('settings.html', result=dict((k, None) for k in modules_list))
 
 
 @blueprint.route('/module/<name>')
 def module(name):
+    modules_list = [x['module'] for x in db['modules_list'].find({})]
     if name in modules_list:
-        return render_template('modules/base.html', fields="fields", module_name=name, modules_list=modules_list)
+        settings = db['modules_list'].find({'module': name})[0]['settings']
+        return render_template('modules/base.html', settings=settings, module_name=name)
     else:
         return render_template('404.html'), 404
 

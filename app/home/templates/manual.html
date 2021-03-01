@@ -4,23 +4,28 @@
 
 {% block content %}
     <header class="page-header">
-        <h1>Adding a URL manually</h1>
+        <h1>Adding a URLs manually</h1>
         <div class=post-meta>
             <ul>URL information will be added to the database :</ul>
         </div>
     </header>
 
     <div id="searchbox">
-        <form action="/manual/add" method="GET">
-            <input name="url" autofocus placeholder="Enter url " aria-label="module-test"
-                   {% if url %}value="{{ url }}"{% endif %}>
+        <form action="/manual/add_bulk" method="POST" id="add_urls">
+            <textarea name="urls" autofocus placeholder="Enter url " aria-label="module-test" rows="10"
+                      {% if url %}value="{{ url }}"{% endif %}></textarea>
+            <div class="buttons">
+                <a class="button" type="submit" href="javascript:{}"
+                   onclick="document.getElementById('add_urls').submit();">Submit</a>
+            </div>
+
         </form>
-        <ul id="searchResults" aria-label="modules results">
+        <ul id=" searchResults" aria-label="modules results">
             {% if error %}
                 <li class="post-entry">
                     <p style="color: darksalmon;"><strong>{{ error }}</strong></p>
                 </li>
-            {% elif add %}
+            {% elif add_msg %}
                 <li class="post-entry">
                     <p><strong>Information will be added to the database soon </strong></p>
                 </li>

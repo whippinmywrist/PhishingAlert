@@ -259,11 +259,13 @@ body:not(.dark) #sun {
 .pagination .next {
     margin-inline-start:auto}
 
-.ml-buttons {
+
+
+.buttons {
     text-align: center;
 }
 
-.ml-buttons a {
+.buttons a {
     color: var(--theme);
     font-size: 13px;
     line-height: 36px;
@@ -439,10 +441,7 @@ code {
     margin: 24px 0 16px
 }
 
-.post-content textarea, .post-content input {
-    background: white;
-    font-size: small;
-}
+
 
 .post-content h1 {
     margin: 40px auto 32px;
@@ -875,7 +874,7 @@ img {
     background: var(--secondary)
 }
 
-#searchbox input {
+textarea {
     padding: 4px 10px;
     width: 100%;
     color: var(--primary);
@@ -884,7 +883,21 @@ img {
     border-radius: var(--radius)
 }
 
-#searchbox input:focus {
+textarea:focus {
+    border-color: var(--secondary)
+}
+
+
+input {
+    padding: 4px 10px;
+    width: 100%;
+    color: var(--primary);
+    font-weight: 700;
+    border: 2px solid var(--tertiary);
+    border-radius: var(--radius)
+}
+
+input:focus {
     border-color: var(--secondary)
 }
 

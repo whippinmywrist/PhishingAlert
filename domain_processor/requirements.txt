@@ -3,3 +3,5 @@ dnspython
 whois
 pymongo
 tornado
+alexa_siterank
+tldextract
