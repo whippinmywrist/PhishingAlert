@@ -3,10 +3,19 @@ import whois
 import datetime
 import alexa_siterank
 import tarfile
+import os
+import re
 from io import BytesIO
 import requests
 import tldextract
 import itertools
+import pydig
+import socket
+from pysafebrowsing import SafeBrowsing
+from bs4 import BeautifulSoup
+from googlesearch import search
+from ssl import PROTOCOL_TLSv1
+from OpenSSL import SSL
 
 
 class test_url_c:
@@ -17,8 +26,20 @@ class test_url_c:
         self.domain = url_extract.domain
         self.tld = url_extract.suffix
         self.db = db
+
         self.typosquatting_result = []
+
+        self.mx = pydig.query(urlparse(self.url).netloc, 'MX')
+        try:
+            self.response = requests.get(self.url)
+            self.soup = BeautifulSoup(self.response.text, 'html.parser')
+        except Exception as e:
+            self.response = ""
+            self.soup = None
+            print('ERROR: HTTP-GET request for' + self.url + 'failed: ', e)
+
         self.user_urls = [x['url'] for x in list(self.db['analyzed-domains'].find({'user_domain': True})).copy()]
+
         self.qwerty = {
             '1': '2q', '2': '3wq1', '3': '4ew2', '4': '5re3', '5': '6tr4', '6': '7yt5', '7': '8uy6', '8': '9iu7',
             '9': '0oi8', '0': 'po9',
@@ -46,13 +67,52 @@ class test_url_c:
             'k': 'olji', 'l': 'kopm', 'm': 'lp',
             'w': 'sxq', 'x': 'wsdc', 'c': 'xdfv', 'v': 'cfgb', 'b': 'vghn', 'n': 'bhj'
         }
+        self.glyphs = {
+            '2': ['ƻ'],
+            '5': ['ƽ'],
+            'a': ['à'],
+            'b': ['d', 'lb', 'ʙ'],
+            'c': ['e'],
+            'd': ['b', 'cl', 'dl'],
+            'e': ['c'],
+            'f': ['ƒ'],
+            'g': ['q', 'ɡ'],
+            'h': ['lh', 'b'],
+            'i': ['1', 'l'],
+            'j': ['ʝ'],
+            'k': ['lk', 'ik', 'lc'],
+            'l': ['1', 'i'],
+            'm': ['n', 'nn', 'rn', 'rr'],
+            'n': ['m', 'r'],
+            'o': ['0'],
+            'p': ['ƿ'],
+            'q': ['g'],
+            'r': ['ʀ', 'ɼ'],
+            's': ['ꜱ'],
+            't': ['ţ'],
+            'u': ['ᴜ'],
+            'v': ['ᴠ'],
+            'w': ['vv', 'ᴡ'],
+            'x': ['ẋ', 'ẍ'],
+            'y': ['ʏ'],
+            'z': ['ʐ']
+        }
         self.keyboards = [self.qwerty, self.qwertz, self.azerty]
-        with open('dictionaries/dictionary') as f:
+        script_dir = os.path.dirname(__file__)
+        with open(os.path.join(script_dir, 'dictionaries/dictionary')) as f:
             dictionary = set(f.read().splitlines())
             self.dictionary = [x for x in dictionary if x.isalnum()]
-        with open('dictionaries/tld') as f:
+        with open(os.path.join(script_dir, 'dictionaries/tld')) as f:
             tld_dictionary = set(f.read().splitlines())
             self.tld_dictionary = [x for x in tld_dictionary if x.isalnum()]
+
+        from core import modules_list_collection
+        self.allowed_zones = \
+            modules_list_collection.find_one({'module': 'First-level subdomain is allowed'})['settings'][
+                'ALLOWED_FIRST_LEVEL_DOMAINS']
+        self.GOOGLE_SAFE_BROWSING_API_KEY = \
+            modules_list_collection.find_one({'module': 'Google Safe Browsing'})['settings'][
+                'GOOGLE_SAFE_BROWSING_API_KEY']
 
     # Modules
     def digits_counter(self):
@@ -76,12 +136,8 @@ class test_url_c:
 
     def first_level_subdomain_is_allowed(self):
         try:
-            from core import modules_list_collection
-            allowed_zones = \
-                modules_list_collection.find_one({'module': 'First-level subdomain is allowed'})['settings'][
-                    'ALLOWED_FIRST_LEVEL_DOMAINS']
             parse_result = urlparse(self.url)
-            return True if parse_result.netloc.split(".")[-1] in allowed_zones else False
+            return True if parse_result.netloc.split(".")[-1] in self.allowed_zones else False
         except Exception as e:
             print(e)
             return None
@@ -163,48 +219,20 @@ class test_url_c:
             return result
 
         def __homoglyph():
-            glyphs = {
-                '2': ['ƻ'],
-                '5': ['ƽ'],
-                'a': ['à', 'á', 'à', 'â', 'ã', 'ä', 'å', 'ɑ', 'ạ', 'ǎ', 'ă', 'ȧ', 'ą'],
-                'b': ['d', 'lb', 'ʙ', 'ɓ', 'ḃ', 'ḅ', 'ḇ', 'ƅ'],
-                'c': ['e', 'ƈ', 'ċ', 'ć', 'ç', 'č', 'ĉ', 'ᴄ'],
-                'd': ['b', 'cl', 'dl', 'ɗ', 'đ', 'ď', 'ɖ', 'ḑ', 'ḋ', 'ḍ', 'ḏ', 'ḓ'],
-                'e': ['c', 'é', 'è', 'ê', 'ë', 'ē', 'ĕ', 'ě', 'ė', 'ẹ', 'ę', 'ȩ', 'ɇ', 'ḛ'],
-                'f': ['ƒ', 'ḟ'],
-                'g': ['q', 'ɢ', 'ɡ', 'ġ', 'ğ', 'ǵ', 'ģ', 'ĝ', 'ǧ', 'ǥ'],
-                'h': ['lh', 'ĥ', 'ȟ', 'ħ', 'ɦ', 'ḧ', 'ḩ', 'ⱨ', 'ḣ', 'ḥ', 'ḫ', 'ẖ'],
-                'i': ['1', 'l', 'í', 'ì', 'ï', 'ı', 'ɩ', 'ǐ', 'ĭ', 'ỉ', 'ị', 'ɨ', 'ȋ', 'ī', 'ɪ'],
-                'j': ['ʝ', 'ǰ', 'ɉ', 'ĵ'],
-                'k': ['lk', 'ik', 'lc', 'ḳ', 'ḵ', 'ⱪ', 'ķ', 'ᴋ'],
-                'l': ['1', 'i', 'ɫ', 'ł'],
-                'm': ['n', 'nn', 'rn', 'rr', 'ṁ', 'ṃ', 'ᴍ', 'ɱ', 'ḿ'],
-                'n': ['m', 'r', 'ń', 'ṅ', 'ṇ', 'ṉ', 'ñ', 'ņ', 'ǹ', 'ň', 'ꞑ'],
-                'o': ['0', 'ȯ', 'ọ', 'ỏ', 'ơ', 'ó', 'ö', 'ᴏ'],
-                'p': ['ƿ', 'ƥ', 'ṕ', 'ṗ'],
-                'q': ['g', 'ʠ'],
-                'r': ['ʀ', 'ɼ', 'ɽ', 'ŕ', 'ŗ', 'ř', 'ɍ', 'ɾ', 'ȓ', 'ȑ', 'ṙ', 'ṛ', 'ṟ'],
-                's': ['ʂ', 'ś', 'ṣ', 'ṡ', 'ș', 'ŝ', 'š', 'ꜱ'],
-                't': ['ţ', 'ŧ', 'ṫ', 'ṭ', 'ț', 'ƫ'],
-                'u': ['ᴜ', 'ǔ', 'ŭ', 'ü', 'ʉ', 'ù', 'ú', 'û', 'ũ', 'ū', 'ų', 'ư', 'ů', 'ű', 'ȕ', 'ȗ', 'ụ'],
-                'v': ['ṿ', 'ⱱ', 'ᶌ', 'ṽ', 'ⱴ', 'ᴠ'],
-                'w': ['vv', 'ŵ', 'ẁ', 'ẃ', 'ẅ', 'ⱳ', 'ẇ', 'ẉ', 'ẘ', 'ᴡ'],
-                'x': ['ẋ', 'ẍ'],
-                'y': ['ʏ', 'ý', 'ÿ', 'ŷ', 'ƴ', 'ȳ', 'ɏ', 'ỿ', 'ẏ', 'ỵ'],
-                'z': ['ʐ', 'ż', 'ź', 'ᴢ', 'ƶ', 'ẓ', 'ẕ', 'ⱬ']
-            }
             result = []
+            x = []
             for user_domain in self.user_urls:
-                x = []
                 for a in user_domain[1]:
-                    t = glyphs.get(a)
-                    if not t:
+                    temp = self.glyphs.get(a)
+                    if not temp:
                         break
-                    t.append(a)
-                    x.append(t)
+                    temp.append(a)
+                    temp2 = temp.copy()
+                    x.append(temp2)
                 if x:
-                    res = itertools.product(x[0], x[1], x[2])
+                    res = itertools.product(*x)
                     result.extend(["".join(x) for x in res if "".join(x) != user_domain[1]])
+                    x.clear()
             return result
 
         def __hyphenation():
@@ -369,6 +397,87 @@ class test_url_c:
             if domain['domain-name'] == '.'.join(filter(None, [self.subdomain, self.domain, self.tld])):
                 return True
         return False
+
+    def dig_mx(self):
+        try:
+            return True if self.mx else False
+        except Exception as e:
+            print(e)
+            return None
+
+    def dig_ns(self):
+        try:
+            ns = pydig.query(urlparse(self.url).netloc, 'NS')
+            return True if ns else False
+        except Exception as e:
+            print(e)
+            return None
+
+    def tls_cert_valid(self):
+        host = self.url
+        host = host.replace('http://', '').replace('https://', '').replace('/', '')
+        port = 443
+        if ':' in host:
+            host, port = host.split(':')
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            osobj = SSL.Context(PROTOCOL_TLSv1)
+            sock.connect((host, int(port)))
+            oscon = SSL.Connection(osobj, sock)
+            oscon.set_tlsext_host_name(host.encode())
+            oscon.set_connect_state()
+            oscon.do_handshake()
+            cert = oscon.get_peer_certificate()
+            sock.close()
+            if cert.has_expired():
+                return False
+            else:
+                return True
+        except SSL.SysCallError:
+            print('Failed: Misconfigured SSL/TLS for host: ', host)
+            return False
+        except Exception as error:
+            return False
+
+    def google_sb(self):
+        try:
+            if self.GOOGLE_SAFE_BROWSING_API_KEY == '':
+                return False
+            s = SafeBrowsing(self.GOOGLE_SAFE_BROWSING_API_KEY)
+            r = s.lookup_urls([self.url])
+            return r[self.url]['malicious']
+        except Exception as e:
+            print('ERROR: Google Safe Browsing ,', e)
+            return None
+
+    def google_search_index(self):
+        try:
+            response = search("site:" + self.url)
+            if response:
+                return True
+            else:
+                return False
+        except Exception as e:
+            print('ERROR: Google Search: ,', e)
+            return None
+
+    def favicon(self):
+        if self.soup is None:
+            return False
+        else:
+            try:
+                for head in self.soup.find_all('head'):
+                    for head.link in self.soup.find_all('link', href=True):
+                        dots = [x.start(0) for x in re.finditer('\.', head.link['href'])]
+                        if self.url in head.link['href'] or len(dots) == 1 or self.domain in head.link['href']:
+                            return True
+                        else:
+                            return False
+                # TODO: Найти новый способ вытащить favicon
+                return False
+            except Exception as e:
+                print('ERROR: Favicon module error - ', e)
+                return None
 
     def dispatch(self, value):
         method_name = str(value)

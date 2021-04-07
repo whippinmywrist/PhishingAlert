@@ -26,18 +26,18 @@
 
     </script>
     <article class="first-entry home-info">
-        <header class=entry-header><h2>Phishing domain found:</h2></header>
+        <header class=entry-header><h2>Good domain found:</h2></header>
         <section class=entry-content><p>
             <p>Total {{ domains|length }} domains found!</p>
         </section>
     </article>
 
     {% import "layouts/domain-card.html" as  domain_card %}
-    {% for domain in domains %}
-        {% set i = loop.index %}
-        {{ domain_card.dc(domain['url'], '../static/img/screenshot.png', domain['datetime'].strftime("%B %d, %Y"),
-                'id_phishing1', '#', 'id_fp1', '#', domain['data'], 'Bad') }}
-    {% endfor %}
+        {% for domain in domains %}
+            {% set i = loop.index %}
+            {{ domain_card.dc(domain['url'], '../static/img/screenshot.png', domain['datetime'].strftime("%B %d, %Y"),
+                'id_phishing1', '#', 'id_fp1', '#', domain['data'], 'Good') }}
+        {% endfor %}
     {% if not domains %}
         <p>No entries</p>
     {% endif %}

@@ -14,7 +14,3 @@ class MLCommandSender:
     def predict(self):
         self.sender.send(pickle.dumps(('predict')))
         return "OK: predict sended"
-
-ml = MLCommandSender()
-print(ml.predict())
-#print(ml.fit())

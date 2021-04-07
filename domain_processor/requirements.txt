@@ -5,3 +5,8 @@ pymongo
 tornado
 alexa_siterank
 tldextract
+pydig
+pyopenssl
+pysafebrowsing
+googlesearch-python-extended
+

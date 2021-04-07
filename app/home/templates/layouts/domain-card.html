@@ -1,23 +1,37 @@
-{% macro dc(header, screenshot, datetime, id_phising, href_phising, id_fp, href_fp, data) -%}
-<div class=domain-card>
-    <header class=entry-header><h2>{{ header }}</h2></header>
-    <p><img src="{{ screenshot }}"></p>
-    <div class="ml-results">
-        <details>
-            <summary accesskey="c" title="(Alt + C)">
-                <div class="details">Show ML results</div>
-            </summary>
-            <blockquote>
-                {% for key, value in data.items() %}
-                <a>{{ key }}: {{ value }}</a><br>
-                {% endfor %}
-            </blockquote>
-        </details>
+{% macro dc(header, screenshot, datetime, id_phising, href_phising, id_fp, href_fp, data, parent) -%}
+    <div class=domain-card>
+        <header class=entry-header>
+            <h2>{{ header }} <a target="_blank" rel="noopener noreferrer" href="{{ header }}">🔗</a></h2>
+        </header>
+        <p><img src="https://screenshotapi.net/api/v1/screenshot?url={{ header }}&output=image"></p>
+        <div class="ml-results">
+            <details>
+                <summary accesskey="c" title="(Alt + C)">
+                    <div class="details">Show details</div>
+                </summary>
+                <blockquote>
+                    {% for key, value in data.items() %}
+                        <a>{{ key }}: {{ value }}</a><br>
+                    {% endfor %}
+                </blockquote>
+            </details>
+        </div>
+
+        <div class="buttons">
+
+            {% if parent == 'Bad' %}
+                <a class=button onclick="send_approve_form('{{ header }}', 'Bad')" href="javascript:;">This is
+                    definitely a phishing
+                    domain!</a>
+                <a class=button href={{ href_fp }}>False-positive</a>
+            {% elif parent == 'Good' %}
+                <a class=button onclick="send_approve_form('{{ header }}', 'Good')" href="javascript:;">This is
+                    definitely a good
+                    domain!</a>
+                <a class=button href={{ href_fp }}>False-positive</a>
+            {% endif %}
+
+        </div>
+        <footer class=entry-footer>{{ datetime }}</footer>
     </div>
-    <div class="buttons">
-        <a class=button id={{ id_phising }} href={{ href_phising }}>It is a phishing domain!</a>
-        <a class=button id={{ id_fp }} href={{href_fp}}>False-positive</a>
-    </div>
-    <footer class=entry-footer>{{ datetime }}</footer>
-</div>
 {%- endmacro %}

@@ -1,5 +1,5 @@
 import zmq
-import json, pickle
+import pickle
 
 class ZMQ(object):
     def __init__(self, app=None):
