@@ -2,7 +2,7 @@ from app.home import blueprint
 from flask import render_template, request
 from jinja2 import TemplateNotFound
 import urllib.request
-from app import zmq, db, analyzed_domains
+from app import zmq, mongo
 
 
 def domains_to_domain_processor(urls, user_domain=False):
@@ -21,7 +21,7 @@ def domains_to_domain_processor(urls, user_domain=False):
 @blueprint.route('/my_domains', methods=['GET', 'POST'])
 def my_domains():
     if request.method == 'GET':
-        urls = [x['url'] for x in list(analyzed_domains.find({'user_domain': True})).copy()]
+        urls = [x['url'] for x in list(mongo.db['phishing-alert']['analyzed-domains'].find({'user_domain': True})).copy()]
         print(urls)
         return render_template('my_domains.html', urls=urls)
     if request.method == 'POST':
@@ -65,15 +65,15 @@ def manual_add():
 
 @blueprint.route('/settings')
 def settings():
-    modules_list = [x['module'] for x in db['modules_list'].find({})]
+    modules_list = [x['module'] for x in mongo.db['phishing-alert']['modules_list'].find({})]
     return render_template('settings.html', result=dict((k, None) for k in modules_list))
 
 
 @blueprint.route('/module/<name>')
 def module(name):
-    modules_list = [x['module'] for x in db['modules_list'].find({})]
+    modules_list = [x['module'] for x in mongo.db['phishing-alert']['modules_list'].find({})]
     if name in modules_list:
-        settings = db['modules_list'].find({'module': name})[0]['settings']
+        settings = mongo.db['phishing-alert']['modules_list'].find({'module': name})[0]['settings']
         return render_template('modules/base.html', settings=settings, module_name=name)
     else:
         return render_template('404.html'), 404

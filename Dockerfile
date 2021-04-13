@@ -9,6 +9,8 @@ COPY requirements.txt run.py config.py ./
 COPY app app
 
 ENV FLASK_APP=run.py
+ENV PRODUCTION=1
+
 EXPOSE 5000
 
 ENTRYPOINT python -u run.py

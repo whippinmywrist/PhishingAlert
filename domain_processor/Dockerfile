@@ -5,10 +5,11 @@ RUN apk add zeromq-dev linux-headers g++ libffi-dev musl-dev openssl-dev cargo
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-COPY core.py main.py modules.py ./
+COPY core.py main.py modules.py ml_client.py dictionaries ./
 
 EXPOSE 43001
 
 ENV PYTHONUNBUFFERED=1
+ENV PRODUCTION=1
 
 ENTRYPOINT python -u main.py

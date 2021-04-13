@@ -1,12 +1,12 @@
 from domain_processor import modules
-from app import db
+from app import mongo
 import os
 import sys
 
 sys.path.insert(0, 'domain_processor/')
 
-test_obj = modules.test_url_c('https://google.com', db)
-test_obj_err = modules.test_url_c('https://kldsngkldfklafkls.com', db)
+test_obj = modules.test_url_c('https://google.com', mongo.db)
+test_obj_err = modules.test_url_c('https://kldsngkldfklafkls.com', mongo.db)
 
 
 def test_module_preprocessor():

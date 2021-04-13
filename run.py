@@ -1,3 +1,5 @@
+import os
+
 from app import create_app
 from config import config_dict
 from decouple import config
@@ -7,8 +9,10 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.log import enable_pretty_logging
 
-
-DEBUG = config('DEBUG', default=True, cast=bool)
+if os.getenv('PRODUCTION') is None:
+    DEBUG = config('DEBUG', default=True, cast=bool)
+else:
+    DEBUG = False
 get_config_mode = 'Debug' if DEBUG else 'Production'
 app_config = config_dict[get_config_mode.capitalize()]
 

@@ -10,7 +10,8 @@ import pickle
 import json
 import zmq
 from pymongo import MongoClient
-import matplotlib.pyplot as plt
+import os
+#import matplotlib.pyplot as plt
 
 
 def run_daemon():
@@ -85,7 +86,11 @@ def fit_model(X, y):
 
 if __name__ == '__main__':
     print("Connecting to the DB...")
-    mongo = MongoClient('localhost', 27017)
+    if os.getenv('PRODUCTION') == '1':
+        mongo_host = 'mongo'
+    else:
+        mongo_host = 'localhost'
+    mongo = MongoClient(mongo_host, 27017)
     db = mongo['phishing-alert']
     modules_collection = db['modules']
     analyzed_domains = db['analyzed-domains']

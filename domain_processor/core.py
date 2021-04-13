@@ -1,9 +1,12 @@
-import zmq, sys
-from tornado import ioloop
 import asyncio
 import datetime
 import pickle
+import os
+import sys
+import zmq
 from pymongo import MongoClient, UpdateOne
+from tornado import ioloop
+
 import modules
 from ml_client import MLCommandSender
 
@@ -121,7 +124,11 @@ async def dot():
         await asyncio.sleep(3)
 
 
-mongo = MongoClient('localhost', 27017)
+if os.getenv('PRODUCTION') == '1':
+    mongo_host = 'mongo'
+else:
+    mongo_host = 'localhost'
+mongo = MongoClient(mongo_host, 27017)
 db = mongo['phishing-alert']
 modules_collection = db['modules']
 analyzed_domains = db['analyzed-domains']

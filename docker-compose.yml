@@ -21,6 +21,8 @@ services:
     build: domain_processor
     ports:
     - "43001:43001"
+    environment:
+      - PRODUCTION=1
     networks:
       - mq_network
       - db_network

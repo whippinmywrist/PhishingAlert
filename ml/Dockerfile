@@ -7,4 +7,6 @@ RUN pip install -r requirements.txt
 
 EXPOSE 43000
 
+ENV PRODUCTION=1
+
 ENTRYPOINT python main.py

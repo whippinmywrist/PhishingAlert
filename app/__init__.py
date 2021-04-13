@@ -1,15 +1,11 @@
 from flask import Flask
 from importlib import import_module
-from flask_login import LoginManager
 from pymongo import MongoClient
 from app.base.zmq import ZMQ
+from app.base.mongo import PyMongo
 
-login_manager = LoginManager()
 zmq = ZMQ()
-mongo = MongoClient(host='localhost', port=27017)
-db = mongo['phishing-alert']
-modules_collection = db['modules']
-analyzed_domains = db['analyzed-domains']
+mongo = PyMongo()
 
 
 def user_verdict_to_domain_processor(domain, user_verdict):
@@ -35,4 +31,5 @@ def create_app(config):
     app = Flask(__name__, static_folder='home/static')
     app.config.from_object(config)
     zmq.init_app(app)
+    mongo.init_app(app)
     return app
