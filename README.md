@@ -20,7 +20,7 @@ cd PhisingAlert
 > Start the app in Docker
 
 ```bash
-sudo docker-compose pull && sudo docker-compose build && sudo docker-compose up -d
+docker-compose pull && docker-compose build && docker-compose up -d
 ```
 
 Visit `http://localhost:5000` in your browser. The app should be up & running.

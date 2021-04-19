@@ -14,8 +14,11 @@ services:
     build: ml
     ports:
     - "43000:43000"
+    environment:
+      - PRODUCTION=1
     networks:
       - mq_network
+      - db_network
   domain_processor:
     restart: always
     build: domain_processor

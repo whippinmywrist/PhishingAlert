@@ -125,10 +125,12 @@ async def dot():
 
 
 if os.getenv('PRODUCTION') == '1':
-    mongo_host = 'mongo'
+    ZMQ_ML_ADDR = 'tcp://0.0.0.0:43000'
+    MONGO_ADDR = 'mongo'
 else:
-    mongo_host = 'localhost'
-mongo = MongoClient(mongo_host, 27017)
+    ZMQ_ML_ADDR = 'tcp://127.0.0.1:43000'
+    MONGO_ADDR = 'localhost'
+mongo = MongoClient(MONGO_ADDR, 27017)
 db = mongo['phishing-alert']
 modules_collection = db['modules']
 analyzed_domains = db['analyzed-domains']
@@ -140,4 +142,4 @@ modules_a = list(cursor).copy()
 modules_c = list(modules_a).copy()
 modules_list = [x['module'] for x in modules_a]
 defs = [y['def'] for y in modules_c]
-ml = MLCommandSender()
+ml = MLCommandSender(ZMQ_ML_ADDR)

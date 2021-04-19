@@ -2,10 +2,11 @@ import zmq
 import pickle
 
 class MLCommandSender:
-    def __init__(self):
+    def __init__(self, ZMQ_ML_ADDR):
+        print(ZMQ_ML_ADDR)
         context = zmq.Context()
         self.sender = context.socket(zmq.PUSH)
-        self.sender.bind('tcp://127.0.0.1:43000')
+        self.sender.bind(ZMQ_ML_ADDR)
 
     def fit(self):
         self.sender.send(pickle.dumps(('fit')))
