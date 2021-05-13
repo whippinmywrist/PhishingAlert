@@ -4,19 +4,39 @@
 
 {% block content %}
     <header class="page-header">
-        <h1>Adding a URLs manually</h1>
+        <h1 id="h1">Adding a URLs manually</h1>
         <div class=post-meta>
-            <ul>URL information will be added to the database :</ul>
+            <ul id="header_meta">URL information will be added to the database :</ul>
         </div>
     </header>
 
-    <div id="searchbox">
+    <div id="searchbox" class="post-content">
         <form action="/manual/add_bulk" method="POST" id="add_urls">
-            <textarea name="urls" autofocus placeholder="Enter url " aria-label="module-test" rows="10"
+            <textarea name="urls" id="urls" class="fade" autofocus placeholder="Enter url " aria-label="module-test"
+                      rows="10"
                       {% if url %}value="{{ url }}"{% endif %}></textarea>
+            <div class="lds hidden fade" id="lds-ellipsis">
+                <div class="lds-ellipsis">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+            <div class="progress-div hidden fade" id="progress-div">
+                <div class="progress-container">
+                    <div class="progress"></div>
+                </div>
+                <progress id="progressbar" max="100" value="0" class="hidden"> 70%</progress>
+            </div>
+            <p id="status_parent" class="hidden fade">Status:&nbsp;
+                <code id="status_text">Initializing...</code>
+            </p>
             <div class="buttons">
-                <a class="button" type="submit" href="javascript:{}"
-                   onclick="document.getElementById('add_urls').submit();">Submit</a>
+                <a class="button fade" type="submit" id="submit_btn" href="javascript:{}"
+                   onclick="form_fetch_api_controller('/manual/add_bulk', 'add_urls');">Submit</a>
+                <a class="button hidden fade" id="back_btn" href="javascript:{}"
+                   onclick="unhide_elements()">Back to domain list</a>
             </div>
 
         </form>
@@ -32,5 +52,127 @@
             {% endif %}
         </ul>
     </div>
+    <script>
+        let test_id = -1;
+        let status = 0;
+        const getDomainProcessorStatus = async () => {
+
+            try {
+                const response = await fetch('/manual/status');
+                if (response.status === 200) {
+                    const json = await response.json(); //extract JSON from the http response
+                    if ((json['msg'] === 'Testing completed') && (json['id'] === (test_id + 1))) {
+                        status = 2;
+                    }
+                    ;
+                    //if ((json['msg'] === 'Testing completed') && (json['id'] === (test_id))) {
+                    if ((json['msg'] === 'Testing completed') && (json['id'] === (test_id))) {
+                        document.getElementById("status_text").innerHTML = "Initializing...";
+                        status = 0;
+                    } else {
+                        document.getElementById("status_text").innerHTML = json['msg'];
+                    }
+                    ;
+                    if ((json['status'] === 'In process')) {
+                        status = 1;
+                        hide_one("lds-ellipsis");
+                        unhide_one("progress-div");
+                    }
+                    ;
+                    changeProgress(json['step'] / json['step_max'] * 100);
+
+                    console.log(json);
+                } else {
+                    console.log("not a 200");
+                }
+            } catch (err) {
+                // catches errors both in fetch and response.json
+                console.log(err);
+            } finally {
+                // do it again in 1 seconds
+                if (status !== 2) {
+                    setTimeout(getDomainProcessorStatus, 1000);
+                }
+            }
+        };
+
+        async function form_fetch_api(url = '', form_id = '') {
+            const thisForm = document.getElementById(form_id);
+            var formData = new FormData(thisForm);
+            status = 0
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+            return await response.json();
+        }
+
+        function form_fetch_api_controller(url = '', form_id = '') {
+            var h1 = document.getElementById("h1");
+            h1.innerHTML = 'Domains are being analyzed now';
+            var header_meta = document.getElementById("header_meta");
+            header_meta.innerHTML = 'Current progress:';
+            hide_elements();
+            form_fetch_api(url, form_id).then((data) => {
+                test_id = data['id']
+                getDomainProcessorStatus();
+                console.log(data)
+            })
+
+        }
+
+        function hide_one(id) {
+            var element = document.getElementById(id);
+            element.classList.add("visuallyhidden");
+            setTimeout(
+                function () {
+                    element.classList.add("hidden");
+                }, 700);
+        }
+
+        function unhide_one(id) {
+            var element = document.getElementById(id);
+            element.classList.remove("hidden");
+
+            setTimeout(
+                function () {
+                    element.classList.remove("visuallyhidden");
+                }, 20);
+        }
+
+        function hide_elements() {
+
+            hide_one("submit_btn");
+            hide_one("urls");
+            setTimeout(
+                function () {
+                    unhide_one("status_parent");
+                    unhide_one("back_btn");
+                    unhide_one("lds-ellipsis");
+                }
+                , 700);
+        }
+
+        function unhide_elements() {
+            hide_one("back_btn");
+            hide_one("progress-div");
+            hide_one("status_parent");
+            hide_one("lds-ellipsis");
+
+            setTimeout(
+                function () {
+
+                    unhide_one("submit_btn");
+                    unhide_one("urls");
+                }
+                , 700);
+        }
+
+        const progressbar = document.querySelector(".progress");
+
+        const changeProgress = (progress) => {
+            progressbar.style.width = `${progress}%`;
+        };
+    </script>
 
 {% endblock content %}

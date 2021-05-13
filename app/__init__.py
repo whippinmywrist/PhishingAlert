@@ -1,6 +1,5 @@
 from flask import Flask
 from importlib import import_module
-from pymongo import MongoClient
 from app.base.zmq import ZMQ
 from app.base.mongo import PyMongo
 

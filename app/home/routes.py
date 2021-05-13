@@ -1,7 +1,8 @@
 from app.home import blueprint
-from flask import render_template, request
+from flask import render_template, request, jsonify
 from jinja2 import TemplateNotFound
 import urllib.request
+from pymongo import DESCENDING
 from app import zmq, mongo
 
 
@@ -21,7 +22,8 @@ def domains_to_domain_processor(urls, user_domain=False):
 @blueprint.route('/my_domains', methods=['GET', 'POST'])
 def my_domains():
     if request.method == 'GET':
-        urls = [x['url'] for x in list(mongo.db['phishing-alert']['analyzed-domains'].find({'user_domain': True})).copy()]
+        urls = [x['url'] for x in
+                list(mongo.db['phishing-alert']['analyzed-domains'].find({'user_domain': True})).copy()]
         print(urls)
         return render_template('my_domains.html', urls=urls)
     if request.method == 'POST':
@@ -38,12 +40,20 @@ def my_domains():
 def manual_add_bulk():
     urls = request.form['urls'].replace('\r', '').split('\n')
     try:
-        print(urls)
+        # TODO: выбор автоматически тест и прод БД
+        c = mongo.db['phishing-alert-test']['process'].find().sort('$natural', DESCENDING).limit(1).next()
         domains_to_domain_processor(urls)
     except Exception as e:
         print(e)
-        return render_template('manual.html', test=False, urls=urls, error=e)
-    return render_template('manual.html', urls=urls, add_msg=True)
+        return jsonify({'status': 'error', 'message': e})
+    return jsonify({'status': 'Ready', 'message': '', 'id': c['id']})
+
+
+@blueprint.route('/manual/status', methods=['GET'])
+def status():
+    c = mongo.db['phishing-alert-test']['process'].find().sort('$natural', DESCENDING).limit(1).next()
+    return jsonify(
+        {'msg': c['msg'], 'step': c['step'], 'step_max': c['step_max'], "id": c['id'], 'status': c['status']})
 
 
 @blueprint.route('/manual/add')

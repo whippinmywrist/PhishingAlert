@@ -1,4 +1,4 @@
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 import whois
 import datetime
 import alexa_siterank
@@ -31,12 +31,19 @@ class test_url_c:
 
         self.mx = pydig.query(urlparse(self.url).netloc, 'MX')
         try:
-            self.response = requests.get(self.url)
+            self.HEADERS = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) '
+                              'AppleWebKit/537.36 (KHTML, like Gecko) '
+                              'Chrome/33.0.1750.152 Safari/537.36'
+            }
+
+            self.response = requests.get(self.url, headers=self.HEADERS)
+            self.response.raise_for_status()
             self.soup = BeautifulSoup(self.response.text, 'html.parser')
         except Exception as e:
             self.response = ""
             self.soup = None
-            print('ERROR: HTTP-GET request for' + self.url + 'failed: ', e)
+            print('ERROR: HTTP-GET request for ' + self.url + ' failed: ', e)
 
         self.user_urls = [x['url'] for x in list(self.db['analyzed-domains'].find({'user_domain': True})).copy()]
 
@@ -116,86 +123,91 @@ class test_url_c:
 
     # Modules
     def digits_counter(self):
-        return sum([1 for s in self.url if s.isdigit()])
+        return sum([1 for s in self.url if s.isdigit()]), None
 
     def url_length(self):
         try:
             parse_result = urlparse(self.url)
-            return len(parse_result.netloc)
+            return len(parse_result.netloc), None
         except Exception as e:
             print(e)
-            return None
+            return None, e
 
     def subdomains_counter(self):
         try:
             parse_result = urlparse(self.url)
-            return len(parse_result.netloc.split(".")) - 2
+            return len(parse_result.netloc.split(".")) - 2, None
         except Exception as e:
             print(e)
-            return None
+            return None, e
 
     def first_level_subdomain_is_allowed(self):
         try:
             parse_result = urlparse(self.url)
-            return True if parse_result.netloc.split(".")[-1] in self.allowed_zones else False
+            return True if parse_result.netloc.split(".")[-1] in self.allowed_zones else False, None
         except Exception as e:
             print(e)
-            return None
+            return None, e
 
     def domain_lifetime(self):
         try:
             domain = whois.query(urlparse(self.url).netloc)
             lifetime = datetime.datetime.now() - domain.creation_date
-            return lifetime.days
+            return lifetime.days, None
         except Exception as e:
             print(e)
-            return None
+            return None, e
 
     def alexa_top1m(self):
         try:
             rank = alexa_siterank.getRank(self.url)['rank']['global']
             if not rank:
                 rank = 100000000000
-            return rank
+            return rank, None
         except Exception as e:
             print(e)
-            return None
+            return None, e
 
     def phishing_database(self):
-        def update_phishing_database():
-            def write_to_mongo():
-                with tarfile.open(fileobj=BytesIO(response.raw.read()), mode="r:gz") as tar_file:
-                    for member in tar_file.getmembers():
-                        f = tar_file.extractfile(member).read()
-                        docs = []
-                        for x in f.split():
-                            docs.append({
-                                'domain': x.decode('utf-8')
-                            })
-                        module_phishing_database.insert_many(docs)
+        try:
+            def update_phishing_database():
+                def write_to_mongo():
+                    with tarfile.open(fileobj=BytesIO(response.raw.read()), mode="r:gz") as tar_file:
+                        for member in tar_file.getmembers():
+                            f = tar_file.extractfile(member).read()
+                            docs = []
+                            for x in f.split():
+                                docs.append({
+                                    'domain': x.decode('utf-8')
+                                })
+                            module_phishing_database.insert_many(docs)
 
-            phishing_database_url = 'https://raw.githubusercontent.com/mitchellkrogza/Phishing.Database/master/ALL-phishing-domains.tar.gz'
+                phishing_database_url = 'https://raw.githubusercontent.com/mitchellkrogza/Phishing.Database/master/ALL' \
+                                        '-phishing-domains.tar.gz'
 
-            response = requests.get(phishing_database_url, stream=True)
-            if "module_phishing_database" in self.db.list_collection_names():
-                last_update = module_phishing_database.find({}).sort("_id", -1).limit(1)[0]['_id'].generation_time
-                if datetime.datetime.now(datetime.timezone.utc) - last_update > datetime.timedelta(hours=2):
+                response = requests.get(phishing_database_url, stream=True)
+                if "module_phishing_database" in self.db.list_collection_names():
+                    last_update = module_phishing_database.find({}).sort("_id", -1).limit(1)[0]['_id'].generation_time
+                    if datetime.datetime.now(datetime.timezone.utc) - last_update > datetime.timedelta(hours=2):
+                        write_to_mongo()
+                else:
                     write_to_mongo()
+
+            module_phishing_database = self.db['module_phishing_database']
+
+            update_phishing_database()
+
+            url_result = urlparse(self.url)
+            domain = url_result.netloc
+            domain = {'domain': domain}
+            f = list(module_phishing_database.find(domain))
+            if f:
+                return True, None
             else:
-                write_to_mongo()
-
-        module_phishing_database = self.db['module_phishing_database']
-
-        update_phishing_database()
-
-        url_result = urlparse(self.url)
-        domain = url_result.netloc
-        domain = {'domain': domain}
-        f = list(module_phishing_database.find(domain))
-        if f:
-            return True
-        else:
-            return False
+                return False, None
+        except Exception as e:
+            print(e)
+            return None, e
 
     def typosquatting(self):
         def __addition():
@@ -395,23 +407,23 @@ class test_url_c:
         # print([x for x in self.typosquatting_result if x['fuzzer'] == 'subdomain'])
         for domain in self.typosquatting_result:
             if domain['domain-name'] == '.'.join(filter(None, [self.subdomain, self.domain, self.tld])):
-                return True
-        return False
+                return True, None
+        return False, None
 
     def dig_mx(self):
         try:
-            return True if self.mx else False
+            return True if self.mx else False, None
         except Exception as e:
             print(e)
-            return None
+            return None, e
 
     def dig_ns(self):
         try:
             ns = pydig.query(urlparse(self.url).netloc, 'NS')
-            return True if ns else False
+            return True if ns else False, None
         except Exception as e:
             print(e)
-            return None
+            return None, e
 
     def tls_cert_valid(self):
         host = self.url
@@ -430,40 +442,78 @@ class test_url_c:
             cert = oscon.get_peer_certificate()
             sock.close()
             if cert.has_expired():
-                return False
+                return False, None
             else:
-                return True
+                return True, None
         except SSL.SysCallError:
             print('Failed: Misconfigured SSL/TLS for host: ', host)
-            return False
-        except Exception as error:
-            return False
+            return False, None
+        except Exception as e:
+            print(e)
+            return False, None
 
     def google_sb(self):
         try:
             if self.GOOGLE_SAFE_BROWSING_API_KEY == '':
-                return False
+                return False, None
             s = SafeBrowsing(self.GOOGLE_SAFE_BROWSING_API_KEY)
             r = s.lookup_urls([self.url])
-            return r[self.url]['malicious']
+            return r[self.url]['malicious'], None
         except Exception as e:
-            print('ERROR: Google Safe Browsing ,', e)
-            return None
+            ex = 'ERROR: Google Safe Browsing ,' + str(e)
+            print(ex)
+            return None, ex
 
     def google_search_index(self):
         try:
             response = search("site:" + self.url)
             if response:
-                return True
+                return True, None
             else:
-                return False
+                return False, None
         except Exception as e:
-            print('ERROR: Google Search: ,', e)
-            return None
+            ex = 'ERROR: Google Search: ,' + str(e)
+            print(ex)
+            return None, ex
 
     def favicon(self):
+        # Get /favicon.ico
+        favicon_url = urljoin(self.url, 'favicon.ico')
+        response = requests.head(favicon_url, headers=self.HEADERS, allow_redirects=True)
+        if response.status_code == 200:
+            return True, None
+        # Get favicon from html tags
         if self.soup is None:
-            return False
+            return False, None
+        LINK_RELS = [
+            'icon',
+            'shortcut icon',
+            'apple-touch-icon',
+            'apple-touch-icon-precomposed',
+        ]
+        META_NAMES = ['msapplication-TileImage', 'og:image']
+        link_tags = set()
+        for rel in LINK_RELS:
+            for link_tag in self.soup.find_all(
+                    'link', attrs={'rel': lambda r: r and r.lower() == rel, 'href': True}
+            ):
+                link_tags.add(link_tag)
+        meta_tags = set()
+        for meta_tag in self.soup.find_all('meta', attrs={'content': True}):
+            meta_type = meta_tag.get('name') or meta_tag.get('property') or ''
+            meta_type = meta_type.lower()
+            for name in META_NAMES:
+                if meta_type == name.lower():
+                    meta_tags.add(meta_tag)
+
+        for tag in link_tags | meta_tags:
+            href = tag.get('href', '') or tag.get('content', '')
+            href = href.strip()
+
+            if not href or href.startswith('data:image/'):
+                continue
+            return True, None
+        """
         else:
             try:
                 for head in self.soup.find_all('head'):
@@ -477,7 +527,7 @@ class test_url_c:
                 return False
             except Exception as e:
                 print('ERROR: Favicon module error - ', e)
-                return None
+                return None"""
 
     def dispatch(self, value):
         method_name = str(value)

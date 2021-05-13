@@ -3,6 +3,7 @@ services:
   tornado:
     restart: always
     build: .
+    env_file: .env
     ports:
       - "5000:5000"
     networks:
@@ -31,7 +32,6 @@ services:
       - db_network
   mongo:
     restart: always
-    env_file: .env
     image: "mongo:latest"
     ports:
       - "27017:27017"

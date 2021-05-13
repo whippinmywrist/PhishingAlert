@@ -27,5 +27,5 @@ Visit `http://localhost:5000` in your browser. The app should be up & running.
 
 ## Testing
 ```bash
-py.test --cov-report term-missing --cov app tests
+py.test -s --cov-report term-missing --cov app tests --cov domain_processor 
 ```
