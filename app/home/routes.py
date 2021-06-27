@@ -41,7 +41,7 @@ def manual_add_bulk():
     urls = request.form['urls'].replace('\r', '').split('\n')
     try:
         # TODO: выбор автоматически тест и прод БД
-        c = mongo.db['phishing-alert-test']['process'].find().sort('$natural', DESCENDING).limit(1).next()
+        c = mongo.db['phishing-alert']['process'].find().sort('$natural', DESCENDING).limit(1).next()
         domains_to_domain_processor(urls)
     except Exception as e:
         print(e)
@@ -51,7 +51,7 @@ def manual_add_bulk():
 
 @blueprint.route('/manual/status', methods=['GET'])
 def status():
-    c = mongo.db['phishing-alert-test']['process'].find().sort('$natural', DESCENDING).limit(1).next()
+    c = mongo.db['phishing-alert']['process'].find().sort('$natural', DESCENDING).limit(1).next()
     return jsonify(
         {'msg': c['msg'], 'step': c['step'], 'step_max': c['step_max'], "id": c['id'], 'status': c['status']})
 

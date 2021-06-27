@@ -1,6 +1,6 @@
-# PhisingAlert
+# PhishingAlert
 
-PhisingAlert is a solution for finding phishing sites that use social engineering against your users or take away user traffic for advertising
+PhishingAlert is a solution for finding phishing sites that use social engineering against your users or take away user traffic for advertising
 
 ## Deployment
 
@@ -13,8 +13,8 @@ The application can be easily executed in a docker container. The steps:
 
 > Get the code
 ```bash
-git clone https://github.com/whippinmywrist/PhisingAlert.git
-cd PhisingAlert
+git clone https://github.com/whippinmywrist/PhishingAlert.git
+cd PhishingAlert
 ```
 
 > Start the app in Docker

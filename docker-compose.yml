@@ -20,6 +20,8 @@ services:
     networks:
       - mq_network
       - db_network
+    depends_on:
+      - mongo
   domain_processor:
     restart: always
     build: domain_processor

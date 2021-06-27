@@ -49,7 +49,7 @@ def add(url):
 
 def add_bulk(urls, user_domain=False):
     # TODO: Завязать каждый анализ на ID
-    # TODO: Допилить фронт (ошибки, результаты, крутилка до начала, окончание анализа, сраная очередь)
+    # TODO: Допилить фронт (результаты, сраная очередь)
     bulk = []
     step = 0
     step_max = len(urls) * len(modules_list)
@@ -75,12 +75,12 @@ def add_bulk(urls, user_domain=False):
                         'datetime': datetime.datetime.now()
                         }
         step += len(modules_list)
-        print(document['data'])
         bulk.append(document)
     oplog.insert_one({'msg': 'Testing completed', 'step': step, 'step_max': step_max, 'id': test_id, "status": "Ready"})
     upserts = [UpdateOne({'url': x['url']}, {'$set': x}, upsert=True) for x in bulk]
-    analyzed_domains.bulk_write(upserts)
-    # ml.fit()
+    if len(upserts) != 0:
+        analyzed_domains.bulk_write(upserts)
+    ml.fit()
     return True
 
 
