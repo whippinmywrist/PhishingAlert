@@ -6,6 +6,7 @@ import sys
 import zmq
 from pymongo import MongoClient, UpdateOne, DESCENDING
 from tornado import ioloop
+import inspect
 
 from modules import test_url_c
 from ml_client import MLCommandSender
@@ -80,7 +81,9 @@ def add_bulk(urls, user_domain=False):
     upserts = [UpdateOne({'url': x['url']}, {'$set': x}, upsert=True) for x in bulk]
     if len(upserts) != 0:
         analyzed_domains.bulk_write(upserts)
-    ml.fit()
+    if not ml.started:
+        ml.bind()
+    ml.predict()
     return True
 
 
@@ -89,6 +92,8 @@ def user_approve(domain, user_verdict):
         'user_verdict': user_verdict
     }
     analyzed_domains.update_one({'url': domain}, {'$set': document}, upsert=True)
+    if not ml.started:
+        ml.bind()
     print(ml.fit())
 
 
@@ -171,5 +176,4 @@ modules_a = list(cursor).copy()
 modules_c = list(modules_a).copy()
 modules_list = [x['module'] for x in modules_a]
 defs = [y['def'] for y in modules_c]
-if __name__ == "main":
-    ml = MLCommandSender(ZMQ_ML_ADDR)
+ml = MLCommandSender(ZMQ_ML_ADDR)

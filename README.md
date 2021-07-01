@@ -23,7 +23,7 @@ cd PhishingAlert
 docker-compose pull && docker-compose build && docker-compose up -d
 ```
 
-Visit `http://localhost:5000` in your browser. The app should be up & running.
+Visit `http://localhost` in your browser. The app should be up & running.
 
 ## Testing
 ```bash
