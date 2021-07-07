@@ -477,57 +477,47 @@ class test_url_c:
             return None, ex
 
     def favicon(self):
-        # Get /favicon.ico
-        favicon_url = urljoin(self.url, 'favicon.ico')
-        response = requests.head(favicon_url, headers=self.HEADERS, allow_redirects=True)
-        if response.status_code == 200:
-            return True, None
-        # Get favicon from html tags
-        if self.soup is None:
-            return False, None
-        LINK_RELS = [
-            'icon',
-            'shortcut icon',
-            'apple-touch-icon',
-            'apple-touch-icon-precomposed',
-        ]
-        META_NAMES = ['msapplication-TileImage', 'og:image']
-        link_tags = set()
-        for rel in LINK_RELS:
-            for link_tag in self.soup.find_all(
-                    'link', attrs={'rel': lambda r: r and r.lower() == rel, 'href': True}
-            ):
-                link_tags.add(link_tag)
-        meta_tags = set()
-        for meta_tag in self.soup.find_all('meta', attrs={'content': True}):
-            meta_type = meta_tag.get('name') or meta_tag.get('property') or ''
-            meta_type = meta_type.lower()
-            for name in META_NAMES:
-                if meta_type == name.lower():
-                    meta_tags.add(meta_tag)
+        try:
+            # Get /favicon.ico
+            favicon_url = urljoin(self.url, 'favicon.ico')
+            response = requests.head(favicon_url, headers=self.HEADERS, allow_redirects=True)
+            if response.status_code == 200:
+                return True, None
+            # Get favicon from html tags
+            if self.soup is None:
+                return False, None
+            LINK_RELS = [
+                'icon',
+                'shortcut icon',
+                'apple-touch-icon',
+                'apple-touch-icon-precomposed',
+            ]
+            META_NAMES = ['msapplication-TileImage', 'og:image']
+            link_tags = set()
+            for rel in LINK_RELS:
+                for link_tag in self.soup.find_all(
+                        'link', attrs={'rel': lambda r: r and r.lower() == rel, 'href': True}
+                ):
+                    link_tags.add(link_tag)
+            meta_tags = set()
+            for meta_tag in self.soup.find_all('meta', attrs={'content': True}):
+                meta_type = meta_tag.get('name') or meta_tag.get('property') or ''
+                meta_type = meta_type.lower()
+                for name in META_NAMES:
+                    if meta_type == name.lower():
+                        meta_tags.add(meta_tag)
 
-        for tag in link_tags | meta_tags:
-            href = tag.get('href', '') or tag.get('content', '')
-            href = href.strip()
+            for tag in link_tags | meta_tags:
+                href = tag.get('href', '') or tag.get('content', '')
+                href = href.strip()
 
-            if not href or href.startswith('data:image/'):
-                continue
-            return True, None
-        """
-        else:
-            try:
-                for head in self.soup.find_all('head'):
-                    for head.link in self.soup.find_all('link', href=True):
-                        dots = [x.start(0) for x in re.finditer('\.', head.link['href'])]
-                        if self.url in head.link['href'] or len(dots) == 1 or self.domain in head.link['href']:
-                            return True
-                        else:
-                            return False
-                # TODO: Найти новый способ вытащить favicon
-                return False
-            except Exception as e:
-                print('ERROR: Favicon module error - ', e)
-                return None"""
+                if not href or href.startswith('data:image/'):
+                    continue
+                return True, None
+        except Exception as e:
+            print('ERROR: Favicon module error - ', e)
+            return False, e
+
 
     def dispatch(self, value):
         method_name = str(value)
